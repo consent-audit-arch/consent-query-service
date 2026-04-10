@@ -25,6 +25,18 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(ConsentHistoryNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleConsentHistoryNotFound(
+            ConsentHistoryNotFoundException ex) {
+        log.warn("Consent history not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of(
+                        "error", "Not Found",
+                        "message", ex.getMessage(),
+                        "timestamp", LocalDateTime.now().toString()
+                ));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("Invalid argument: {}", ex.getMessage());

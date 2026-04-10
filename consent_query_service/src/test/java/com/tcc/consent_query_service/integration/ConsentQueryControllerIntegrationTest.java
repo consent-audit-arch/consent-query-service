@@ -1,6 +1,8 @@
 package com.tcc.consent_query_service.integration;
 
+import com.tcc.consent_query_service.infrastructure.persistence.entities.ConsentEventJpaEntity;
 import com.tcc.consent_query_service.infrastructure.persistence.entities.ConsentProjectionJpaEntity;
+import com.tcc.consent_query_service.infrastructure.persistence.repositories.JPARepository.ConsentEventJpaRepository;
 import com.tcc.consent_query_service.infrastructure.persistence.repositories.JPARepository.ConsentProjectionJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
@@ -25,9 +28,13 @@ class ConsentQueryControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private ConsentProjectionJpaRepository projectionRepository;
 
+    @Autowired
+    private ConsentEventJpaRepository eventRepository;
+
     @BeforeEach
     void setUp() {
         projectionRepository.deleteAll();
+        eventRepository.deleteAll();
     }
 
     @Test
@@ -119,5 +126,58 @@ class ConsentQueryControllerIntegrationTest extends AbstractIntegrationTest {
             throw new RuntimeException(e);
         }
         projectionRepository.save(entity);
+    }
+
+    @Test
+    void getConsentHistory_shouldReturnHistoryWhenFound() throws Exception {
+        Long userId = 100L;
+        persistEvent(userId, "ConsentGranted", "PERSONAL_DATA", "PROMOTION", 1L);
+        persistEvent(userId, "ConsentRevoked", "PERSONAL_DATA", "PROMOTION", 2L);
+
+        mockMvc.perform(get("/api/v1/consent/{userId}/history", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId", is(100)))
+                .andExpect(jsonPath("$.events", hasSize(2)))
+                .andExpect(jsonPath("$.events[0].eventType", is("ConsentGranted")))
+                .andExpect(jsonPath("$.events[0].dataCategory", is("PERSONAL_DATA")))
+                .andExpect(jsonPath("$.events[0].finality", is("PROMOTION")))
+                .andExpect(jsonPath("$.events[0].version", is(1)))
+                .andExpect(jsonPath("$.events[1].eventType", is("ConsentRevoked")))
+                .andExpect(jsonPath("$.events[1].version", is(2)));
+    }
+
+    @Test
+    void getConsentHistory_shouldReturn404WhenNotFound() throws Exception {
+        Long userId = 999L;
+
+        mockMvc.perform(get("/api/v1/consent/{userId}/history", userId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error", is("Not Found")))
+                .andExpect(jsonPath("$.message", containsString("Consent history not found")));
+    }
+
+    @Test
+    void getConsentHistory_shouldReturnEmptyListWhenNoEvents() throws Exception {
+        Long userId = 100L;
+        persistEvent(userId, "ConsentGranted", "PERSONAL_DATA", "PROMOTION", 1L);
+
+        mockMvc.perform(get("/api/v1/consent/{userId}/history", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.events", hasSize(1)));
+    }
+
+    private void persistEvent(Long userId, String eventType, String dataCategory, String finality, Long version) {
+        ConsentEventJpaEntity entity = new ConsentEventJpaEntity();
+        entity.setStreamId("consent-" + userId + "-" + dataCategory + "-" + finality);
+        entity.setVersion(version);
+        entity.setUserId(userId);
+        entity.setEventType(eventType);
+        entity.setDataCategory(dataCategory);
+        entity.setFinality(finality);
+        entity.setPayload("{}");
+        entity.setIssuedBy("{\"id\":\"system-001\",\"type\":\"SYSTEM\"}");
+        entity.setOccurredAt(Instant.now());
+        entity.setCreatedAt(Instant.now());
+        eventRepository.save(entity);
     }
 }

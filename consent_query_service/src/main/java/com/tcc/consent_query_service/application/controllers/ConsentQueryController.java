@@ -1,7 +1,9 @@
 package com.tcc.consent_query_service.application.controllers;
 
 import com.tcc.consent_query_service.application.controllers.DTOs.responses.ConsentAuthorizationDetailResponse;
+import com.tcc.consent_query_service.application.controllers.DTOs.responses.ConsentHistoryResponse;
 import com.tcc.consent_query_service.application.controllers.DTOs.responses.ConsentResponse;
+import com.tcc.consent_query_service.application.services.ConsentHistoryQueryService;
 import com.tcc.consent_query_service.application.services.ConsentQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class ConsentQueryController {
 
     private final ConsentQueryService consentQueryService;
+    private final ConsentHistoryQueryService consentHistoryQueryService;
 
     @GetMapping("/{userId}")
     public ResponseEntity<ConsentResponse> getConsentsByUserId(@PathVariable Long userId) {
@@ -32,6 +35,13 @@ public class ConsentQueryController {
                 userId, dataCategory, purpose);
         ConsentAuthorizationDetailResponse response = consentQueryService.getConsentAuthorization(
                 userId, dataCategory, purpose);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{userId}/history")
+    public ResponseEntity<ConsentHistoryResponse> getConsentHistory(@PathVariable Long userId) {
+        log.info("Fetching consent history for user: {}", userId);
+        ConsentHistoryResponse response = consentHistoryQueryService.getHistoryByUserId(userId);
         return ResponseEntity.ok(response);
     }
 }
