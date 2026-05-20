@@ -12,6 +12,8 @@ public interface ConsentProjectionJpaRepository extends JpaRepository<ConsentPro
 
     List<ConsentProjectionJpaEntity> findAllByUserId(Long userId);
 
+    List<ConsentProjectionJpaEntity> findAllByUserIdIn(List<Long> userIds);
+
     Optional<ConsentProjectionJpaEntity> findByUserIdAndDataCategoryAndFinality(
             Long userId, String dataCategory, String finality);
 }

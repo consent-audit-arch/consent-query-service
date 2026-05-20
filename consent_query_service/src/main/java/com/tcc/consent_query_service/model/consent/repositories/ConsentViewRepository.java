@@ -9,5 +9,8 @@ import java.util.Optional;
 
 public interface ConsentViewRepository {
     List<ConsentView> findAllByUserId(Long userId);
+
+    List<ConsentView> findAllByUserIdIn(List<Long> userIds);
+
     Optional<ConsentView> findByUserIdAndDataCategoryAndPurpose(Long userId, DataCategory dataCategory, Purpose purpose);
 }

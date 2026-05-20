@@ -6,10 +6,10 @@ import java.util.Arrays;
 
 @Getter
 public enum Purpose {
-    PROMOTION("Promoção"),
-    BILLING("Cobrança"),
-    ANALYTICS("Análise"),
-    CUSTOMER_SERVICE("Atendimento");
+    PROMOTION("PROMOTION"),
+    BILLING("BILLING"),
+    ANALYTICS("ANALYTICS"),
+    CUSTOMER_SERVICE("CUSTOMER_SERVICE");
 
     private final String description;
 
@@ -23,7 +23,7 @@ public enum Purpose {
 
     public static Purpose of(String value) {
         return Arrays.stream(values())
-                .filter(v -> v.description.equalsIgnoreCase(value) || v.name().equalsIgnoreCase(value))
+                .filter(v -> v.description.equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Purpose: " + value));
     }

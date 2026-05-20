@@ -27,6 +27,12 @@ public class ConsentViewRepositoryImpl implements ConsentViewRepository {
     }
 
     @Override
+    public List<ConsentView> findAllByUserIdIn(List<Long> userIds) {
+        List<ConsentProjectionJpaEntity> entities = jpaRepository.findAllByUserIdIn(userIds);
+        return mapper.toDomainList(entities);
+    }
+
+    @Override
     public Optional<ConsentView> findByUserIdAndDataCategoryAndPurpose(
             Long userId, DataCategory dataCategory, Purpose purpose) {
         return jpaRepository.findByUserIdAndDataCategoryAndFinality(

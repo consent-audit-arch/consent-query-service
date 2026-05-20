@@ -6,9 +6,9 @@ import java.util.Arrays;
 
 @Getter
 public enum DataCategory {
-    PERSONAL_DATA("Dados Pessoais"),
-    CONTRACT_DATA("Dados Contratuais"),
-    FINANCIAL_DATA("Dados Financeiros");
+    PERSONAL_DATA("PERSONAL_DATA"),
+    CONTRACT_DATA("CONTRACT_DATA"),
+    FINANCIAL_DATA("FINANCIAL_DATA");
 
     private final String description;
 
@@ -22,7 +22,7 @@ public enum DataCategory {
 
     public static DataCategory of(String value) {
         return Arrays.stream(values())
-                .filter(v -> v.description.equalsIgnoreCase(value) || v.name().equalsIgnoreCase(value))
+                .filter(v -> v.description.equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid DataCategory: " + value));
     }
